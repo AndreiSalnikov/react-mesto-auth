@@ -10,7 +10,6 @@ function AddPlacePopup({isOpen, onClose, onAddCard, isLoading}) {
     setLink('');
   }, [isOpen]);
 
-
   function handleSubmit(e) {
     e.preventDefault();
     onAddCard({

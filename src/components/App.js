@@ -7,7 +7,7 @@ import EditAvatarPopup from "./EditAvatarPopup";
 import ImagePopup from "./ImagePopup";
 import ConfirmPopup from "./ConfirmPopup"
 import Footer from "./Footer";
-import {Route, Switch, Redirect} from 'react-router-dom';
+import {Route, Switch, Redirect, useHistory} from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute'
 import Login from "./Login";
 import Register from "./Register";
@@ -15,12 +15,11 @@ import CurrentUserContext from "../contexts/CurrentUserContext";
 import CardsContext from "../contexts/CardsContext";
 import {api} from '../utils/api';
 import {cardsPath, userPath} from '../utils/utils';
-
-//sign in - войти (Login)
-//sign up - зарегистрироваться (Register)
+import InfoTooltip from "./InfoTooltip";
+import * as auth from '../utils/auth'
 
 function App() {
-
+  const history = useHistory();
   const [selectedCard, setSelectedCard] = useState(null)
   const [cardForDelete, setCardForDelete] = useState(null)
   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false)
@@ -35,7 +34,9 @@ function App() {
   })
   const [cards, setCards] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
-
+  const [isInfoToolTipPopupOpen, setIsInfoToolTipPopupOpen] = useState(false);
+  const [isSuccessRegistration, setIsSuccessRegistration] = useState(false);
+  const [email, setEmail] = useState('');
   useEffect(() => {
     Promise.all([api.getServerInfo(userPath), api.getServerInfo(cardsPath)]).then(([userData, cards]) => {
       setCurrentUser(userData);
@@ -43,12 +44,50 @@ function App() {
     }).catch((err) => console.log(err))
   }, [])
 
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
+      auth.tokenCheck(jwt).then((res) => {
+        setLoggedIn(true);
+        setEmail(res.data.email);
+        history.push("/");
+      }).catch((err) => console.log(err))
+    }
+  }, [history]);
+
   function handleAddPlaceSubmit(data) {
     setIsLoading(true);
     api.addServerCard(data, cardsPath).then((newCard) => {
       setCards([newCard, ...cards]);
       closeAllPopups()
     }).catch((err) => console.log(err)).finally(() => setIsLoading(false))
+  }
+
+  function handleRegistrationSubmit(email, password) {
+    setIsLoading(true);
+    auth.register(email, password).then(() => {
+      setIsSuccessRegistration(true)
+      setIsInfoToolTipPopupOpen(true)
+      history.push("/sign-in");
+    }).catch((err) => {
+      console.log(err)
+      setIsSuccessRegistration(false)
+      setIsInfoToolTipPopupOpen(true);
+    }).finally(() => setIsLoading(false))
+  }
+
+  function handleLoginSubmit(email, password) {
+    setIsLoading(true);
+    auth.login(email, password).then((res) => {
+      localStorage.setItem("jwt", res.token);
+      setLoggedIn(true);
+      setEmail(email);
+      history.push("/");
+    }).catch((err) => {
+      setIsSuccessRegistration(false)
+      setIsInfoToolTipPopupOpen(true);
+      console.log(err)
+    }).finally(() => setIsLoading(false))
   }
 
   function handleUpdateAvatar(data) {
@@ -110,13 +149,23 @@ function App() {
     setEditProfilePopupOpen(false)
     setAddPlacePopupOpen(false)
     setConfirmPopupOpen(false);
+    setIsInfoToolTipPopupOpen(false)
     setSelectedCard(null);
+  }
+
+  function handleSignOut() {
+    localStorage.removeItem("jwt");
+    setLoggedIn(false);
+    history.push("/sign-in");
   }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <CardsContext.Provider value={cards}>
-        <Header/>
+        <Header
+          email={email}
+          onSignOut={handleSignOut}
+        />
         <Switch>
           <ProtectedRoute
             exact
@@ -131,10 +180,20 @@ function App() {
             component={Main}>
           </ProtectedRoute>
           <Route path="/sign-in">
-            <Login/>
+            <Login
+              onLogin={handleLoginSubmit}
+              isLoading={isLoading}
+              textLoad="Вход..."
+              textOnButton="Войти"
+            />
           </Route>
           <Route path="/sign-up">
-            <Register />
+            <Register
+              onRegister={handleRegistrationSubmit}
+              isLoading={isLoading}
+              textLoad="Регистрация..."
+              textOnButton="Зарегистрироваться"
+            />
           </Route>
           <Route exact path="/">
             {loggedIn ? <Redirect to="/"/> : <Redirect to="/sign-in"/>}
@@ -170,7 +229,13 @@ function App() {
           onClose={closeAllPopups}
         >
         </ConfirmPopup>>
-        {loggedIn &&  <Footer/>}
+        <InfoTooltip
+          isOpen={isInfoToolTipPopupOpen}
+          onClose={closeAllPopups}
+          success={isSuccessRegistration}
+        >
+        </InfoTooltip>
+        {loggedIn && <Footer/>}
       </CardsContext.Provider>
     </CurrentUserContext.Provider>
   )

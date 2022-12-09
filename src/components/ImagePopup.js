@@ -1,7 +1,6 @@
 import Popup from "./Popup"
 
 function ImagePopup({card, onClose}) {
-
   return (<Popup card={card} onClose={onClose} id={"popupShowImg"}>
     <figure className="popup__figure">
       <button
