@@ -7,6 +7,13 @@
   transition: opacity .3s ease-out;
 }
 
+@media screen and (max-width: 890px) {
+  .header__link {
+    margin-right: 30px;
+  }
+}
+
+
 .header__link:hover {
   cursor: pointer;
   opacity: 0.6;
