@@ -37,12 +37,16 @@ function App() {
   const [isInfoToolTipPopupOpen, setIsInfoToolTipPopupOpen] = useState(false);
   const [isSuccessRegistration, setIsSuccessRegistration] = useState(false);
   const [email, setEmail] = useState('');
+
   useEffect(() => {
-    Promise.all([api.getServerInfo(userPath), api.getServerInfo(cardsPath)]).then(([userData, cards]) => {
-      setCurrentUser(userData);
-      setCards(cards);
-    }).catch((err) => console.log(err))
-  }, [])
+      if (loggedIn) {
+        Promise.all([api.getServerInfo(userPath), api.getServerInfo(cardsPath)]).then(([userData, cards]) => {
+          setCurrentUser(userData);
+          setCards(cards);
+        }).catch((err) => console.log(err))
+      }
+    }
+    , [loggedIn])
 
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
@@ -228,7 +232,7 @@ function App() {
           isOpen={isConfirmPopupOpen}
           onClose={closeAllPopups}
         >
-        </ConfirmPopup>>
+        </ConfirmPopup>
         <InfoTooltip
           isOpen={isInfoToolTipPopupOpen}
           onClose={closeAllPopups}
