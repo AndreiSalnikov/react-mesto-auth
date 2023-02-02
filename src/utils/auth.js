@@ -1,4 +1,4 @@
-const baseUrl = "https://auth.nomoreparties.co";
+const baseUrl = "https://api.mestoforyou.nomoredomainsclub.ru";
 
 function checkResponse(res) {
   if (res.ok) {

@@ -53,7 +53,7 @@ function App() {
     if (jwt) {
       auth.tokenCheck(jwt).then((res) => {
         setLoggedIn(true);
-        setEmail(res.data.email);
+        setEmail(res.email);
         history.push("/");
       }).catch((err) => console.log(err))
     }

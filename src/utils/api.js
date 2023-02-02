@@ -1,5 +1,9 @@
+const jwt = localStorage.getItem('jwt')
+
 const settingUserApi = {
-  baseUrl: "https://api.mestoforyou.nomoredomainsclub.ru", headers: {
+  baseUrl: "https://api.mestoforyou.nomoredomainsclub.ru",
+  headers: {
+    authorization: `Bearer ${jwt}`,
     'Content-Type': 'application/json'
   }
 }
