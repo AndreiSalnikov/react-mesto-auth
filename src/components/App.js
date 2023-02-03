@@ -45,11 +45,11 @@ function App() {
           setCards(cards);
         }).catch((err) => console.log(err))
       }
-    }
-    , [loggedIn])
+      handleTokenCheck();
+    }, [loggedIn])
 
-  useEffect(() => {
-    const jwt = localStorage.getItem("jwt");
+  function handleTokenCheck() {
+        const jwt = localStorage.getItem("jwt");
     if (jwt) {
       auth.tokenCheck(jwt).then((res) => {
         setLoggedIn(true);
@@ -57,7 +57,18 @@ function App() {
         history.push("/");
       }).catch((err) => console.log(err))
     }
-  }, [history]);
+  }
+
+  // useEffect(() => {
+  //   const jwt = localStorage.getItem("jwt");
+  //   if (jwt) {
+  //     auth.tokenCheck(jwt).then((res) => {
+  //       setLoggedIn(true);
+  //       setEmail(res.email);
+  //       history.push("/");
+  //     }).catch((err) => console.log(err))
+  //   }
+  // }, [history]);
 
   function handleAddPlaceSubmit(data) {
     setIsLoading(true);
