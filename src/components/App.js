@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react'
+import {api} from '../utils/api';
 import Header from "./Header";
 import Main from "./Main";
 import EditProfilePopup from "./EditProfilePopup";
@@ -13,7 +14,6 @@ import Login from "./Login";
 import Register from "./Register";
 import CurrentUserContext from "../contexts/CurrentUserContext";
 import CardsContext from "../contexts/CardsContext";
-import {api} from '../utils/api';
 import {cardsPath, userPath} from '../utils/utils';
 import InfoTooltip from "./InfoTooltip";
 import * as auth from '../utils/auth'
@@ -94,7 +94,8 @@ function App() {
   function handleLoginSubmit(email, password) {
     setIsLoading(true);
     auth.login(email, password).then((res) => {
-      localStorage.setItem("jwt", res.token);
+      api.setToken(res.token)
+    //  localStorage.setItem("jwt", res.token);
       setLoggedIn(true);
       setEmail(email);
       history.push("/");
@@ -169,6 +170,11 @@ function App() {
   }
 
   function handleSignOut() {
+    setCards([]);
+    setCurrentUser({
+    name: "Загрузка...",
+    about: "Загрузка...",
+    avatar: "https://www.meme-arsenal.com/memes/9836e485f044f8566194374d7566cfe8.jpg"});
     localStorage.removeItem("jwt");
     setLoggedIn(false);
     history.push("/sign-in");
